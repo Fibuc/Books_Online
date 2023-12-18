@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 URL = "https://books.toscrape.com/"
-url = "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
+url = "https://books.toscrape.com/catalogue/category/books/childrens_11/index.html"
 
 etoiles = {
     "One": 1,
