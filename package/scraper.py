@@ -3,10 +3,10 @@ from package.utilitaires import enregistrement_des_donnees_csv, conversion_monna
 import constants
 
 def recuperer_information_livre(url_livre):
-    elements_page = recuperer_contenu_page(url_livre).find_all("div", class_="page_inner")[1]
-    categorie = elements_page.find("ul", "breadcrumb").find_all("a")[2].get_text()
-    titre = elements_page.find("ul", "breadcrumb").find_all("li")[-1].get_text()
-    page_produit = elements_page.find("article", class_="product_page")
+    contenu_page = recuperer_contenu_page(url_livre).find_all("div", class_="page_inner")[1]
+    categorie = contenu_page.find("ul", "breadcrumb").find_all("a")[2].get_text()
+    titre = contenu_page.find("ul", "breadcrumb").find_all("li")[-1].get_text()
+    page_produit = contenu_page.find("article", class_="product_page")
     url_image_livre = constants.URL + page_produit.find("div", class_="item active").find("img")["src"][6:]
     description = page_produit.find_all("p")[3].get_text()
     if description == "\n\n\n\n\n\n":
@@ -62,7 +62,14 @@ def extraire_informations_des_livres_pour_une_categorie(url_categorie):
                 numero_livre_page += 1
             else:
                 numero_livre_page = 1
-            print(f"""Extractions des données du livre {str(0) + str(numero_livre_page) if numero_livre_page < 10 else numero_livre_page}/{int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1)} - Catégorie "{nom_categorie}" - Page {numero_page} sur {nombre_page}""")
+            # print(f"""Extractions des données du livre {str(0) + str(numero_livre_page) if numero_livre_page < 10 else numero_livre_page}/{int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1)} - Catégorie "{nom_categorie}" - Page {numero_page} sur {nombre_page}""")
+            print(f"""Extraction des données du livre {"0" + str(numero_livre_page) if numero_livre_page < 10 else numero_livre_page}/{int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1) if int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1) > 10 else "0" + str(int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1))} - Catégorie "{nom_categorie}" - Page {numero_page} sur {nombre_page}""")
             toutes_les_informations_livres_de_categorie.append(recuperer_information_livre(lien))
         numero_page += 1
-    return enregistrement_des_donnees_csv(toutes_les_informations_livres_de_categorie)
+    enregistrement_des_donnees_csv(toutes_les_informations_livres_de_categorie)
+
+def extraction_toutes_les_categories():
+    contenu_page = recuperer_contenu_page(constants.URL)
+    toutes_les_categories = contenu_page.find("ul", class_="nav nav-list").find_all("a")[1:]
+    for categorie in toutes_les_categories:
+        extraire_informations_des_livres_pour_une_categorie(str(constants.URL + categorie["href"]))
