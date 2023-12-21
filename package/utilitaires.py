@@ -19,5 +19,14 @@ def enregistrement_des_donnees_csv(donnees):
         writer.writerows(donnees)
 
 def repertoire_enregistrement_fichier_csv():
-    path = Path(constants.repertoire_fichier_csv)
+    path = Path(constants.repertoire_fichiers_enregistres)
     return path
+
+def enregistrement_image(categorie, nom_fichier, contenu):
+    path = Path(constants.repertoire_fichiers_enregistres)
+    dossier_image = path / "Images" / categorie
+    chemin_complet = dossier_image / f"{(nom_fichier)}.jpg"
+    dossier_image.mkdir(parents=True, exist_ok=True)
+    with open(chemin_complet, "wb") as fichier_image:
+        fichier_image.write(contenu)
+    return chemin_complet

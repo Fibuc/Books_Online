@@ -8,4 +8,6 @@ etoiles = {
     "Five": 5
 }
 
-repertoire_fichier_csv = ""
+repertoire_fichiers_enregistres = ""
+
+extraction_images = False
