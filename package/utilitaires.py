@@ -2,7 +2,8 @@ from package.requete import recuperer_contenu_page
 import csv
 import constants
 from pathlib import Path
-from datetime import datetime 
+from datetime import datetime
+import jaro
 
 def conversion_monnaie_gbp_en_eur(montant):
     contenu = recuperer_contenu_page("https://www.boursorama.com/bourse/devises/taux-de-change-euro-livresterling-EUR-GBP/")
@@ -30,3 +31,51 @@ def enregistrement_image(categorie, nom_fichier, contenu):
     with open(chemin_complet, "wb") as fichier_image:
         fichier_image.write(contenu)
     return chemin_complet
+
+def verification_repertoire():
+    path = Path(constants.repertoire_fichiers_enregistres)
+    if path.exists() == False:
+        while str(path.parent) == ".":
+            print("Chemin de répertoire non valide.")
+            return False
+        double_refus = False
+        choix_creation = input("Le chemin n'existe pas, voulez-vous le créer ? (y/n) : ")
+        match choix_creation:
+            case "y":
+                constants.repertoire_valide = True
+            case "n":
+                while double_refus == False:
+                    choix_autre_repertoire = input("Voulez-vous choisir un autre répertoire ? (y/n) : ")
+                    match choix_autre_repertoire:
+                        case "y":
+                            constants.repertoire_valide = False
+                            return
+                        case "n":
+                            double_refus = True
+                        case _:
+                            print("Veuillez choisir une option valide.\n")
+                else:
+                    print("Fermeture de l'application")
+                    constants.repertoire_valide = True
+                    constants.lancement = False       
+    constants.repertoire_valide = True
+
+def choix_telechargement_images():
+    choix_telecharger_image = ""
+    while choix_telecharger_image != "y" or "n":
+        choix_telecharger_image = input("Voulez-vous télécharger les images ? (y/n) : ")
+        match choix_telecharger_image:
+            case "y":
+                constants.extraction_images = True
+                break
+            case "n":
+                constants.extraction_images = False
+                break
+            case _ :
+                print("Veuillez choisir une option valide.")
+
+def comparaison_liste_et_choix(input_utilisateur, element):
+    taux = jaro.jaro_winkler_metric(input_utilisateur.lower(), element.lower())
+    if constants.taux_correspondance < taux:
+        constants.taux_correspondance = taux
+        constants.nom_livre_correspondance = element
