@@ -94,26 +94,6 @@ def recuperer_categories_disponibles():
         liste_categorie.append(cle)
     return liste_categorie
 
-def recuperer_titres_livres():
-    nombre_livres = recuperer_nombre_total_livre()
-    page_courante = 1
-    numero_livre_en_cours = 0
-    contenu_page = requete.recuperer_contenu_page(constants.URL)
-    nombre_pages = int(contenu_page.find("li", class_="current").get_text().replace(" ","").replace("\n","")[7:])
-    for i in range(nombre_pages):
-        if page_courante == 1:
-            contenu_page_courante = contenu_page
-        else:
-            contenu_page_courante = requete.recuperer_contenu_page(constants.URL + f"catalogue/page-{page_courante}.html")
-        livre_in_page = contenu_page_courante.find_all("li", class_="col-xs-6 col-sm-4 col-md-3 col-lg-3")
-        for livre in livre_in_page:
-            nom = livre.find("h3").find("a")["title"]
-            lien = str(constants.URL + livre.find("h3").find("a")["href"])
-            constants.nom_livre_et_liens[nom] = lien
-            numero_livre_en_cours += 1
-        page_courante += 1
-        print(f"Récupération des données en cours ... {round(numero_livre_en_cours / nombre_livres * 100, None)}%")
-
 def recuperer_nombre_total_livre():
     contenu_page = requete.recuperer_contenu_page(constants.URL)
     constants.nombre_livre_total = int(contenu_page.find("form", class_="form-horizontal").find("strong").get_text())

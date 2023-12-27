@@ -3,7 +3,7 @@ import csv
 import constants
 from pathlib import Path
 from datetime import datetime
-import jaro
+import re
 
 def conversion_monnaie_gbp_en_eur(montant):
     contenu = recuperer_contenu_page("https://www.boursorama.com/bourse/devises/taux-de-change-euro-livresterling-EUR-GBP/")
@@ -26,7 +26,8 @@ def repertoire_enregistrement_fichier_csv():
 def enregistrement_image(categorie, nom_fichier, contenu):
     path = Path(constants.repertoire_fichiers_enregistres)
     dossier_image = path / "Images" / categorie
-    chemin_complet = dossier_image / f"{(nom_fichier)}.jpg"
+    nom_fichier_filtre = suppression_carateres_speciaux(nom_fichier)
+    chemin_complet = dossier_image / f"{(nom_fichier_filtre)}.jpg"
     dossier_image.mkdir(parents=True, exist_ok=True)
     with open(chemin_complet, "wb") as fichier_image:
         fichier_image.write(contenu)
@@ -74,8 +75,8 @@ def choix_telechargement_images():
             case _ :
                 print("Veuillez choisir une option valide.")
 
-def comparaison_liste_et_choix(input_utilisateur, element):
-    taux = jaro.jaro_winkler_metric(input_utilisateur.lower(), element.lower())
-    if constants.taux_correspondance < taux:
-        constants.taux_correspondance = taux
-        constants.nom_livre_correspondance = element
+def suppression_carateres_speciaux(texte:str):
+    transTable = texte.maketrans("""<>:“"'/|?*""", "  -  .    ")
+    nom_fichier = texte.translate(transTable)
+    return nom_fichier
+
