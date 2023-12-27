@@ -12,16 +12,16 @@ MENU_OPTION ="""Choississez une option :
 
 URL = "https://books.toscrape.com/"
 
-etoiles = {
+stars = {
     "One": 1,
     "Two": 2,
     "Three": 3,
     "Four": 4,
     "Five": 5
 }
-repertoire_fichiers_enregistres = ""
-extraction_images = False
-repertoire_valide = False
-lancement = True
-categories_disponibles = {}
-nombre_livre_total = 0
+saved_files_directory = ""
+extract_images = False
+valid_directory = False
+start = True
+available_categories = {}
+number_of_books_total = 0

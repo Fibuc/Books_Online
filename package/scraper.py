@@ -1,103 +1,101 @@
-from package import requete
-from package import utilitaires
+from package import request
+from package import utils
 import constants
 
-def recuperer_information_livre(url_livre):
-    contenu_page = requete.recuperer_contenu_page(url_livre).find_all("div", class_="page_inner")[1]
-    categorie = contenu_page.find("ul", "breadcrumb").find_all("a")[2].get_text()
-    titre = contenu_page.find("ul", "breadcrumb").find_all("li")[-1].get_text()
-    page_produit = contenu_page.find("article", class_="product_page")
-    url_image_livre = constants.URL + page_produit.find("div", class_="item active").find("img")["src"][6:]
-    description = page_produit.find_all("p")[3].get_text()
-    if description == "\n\n\n\n\n\n":
-        description = "Pas de description"
-    informations_specifiques = page_produit.find("table", "table table-striped").find_all("td")
-    upc = informations_specifiques[0].get_text()
-    prix_ttc = utilitaires.conversion_monnaie_gbp_en_eur(float(informations_specifiques[3].get_text().strip("£")))
-    prix_ht = utilitaires.conversion_monnaie_gbp_en_eur(float(informations_specifiques[2].get_text().strip("£")))
-    quantite_disponible = int("".join([caractere for caractere in informations_specifiques[5].get_text() if caractere.isdigit()]))
-    note = constants.etoiles[page_produit.find("p", class_="star-rating")["class"][1]]
-    toutes_les_informations_du_livre = {
-        "product_page_url": url_livre,
-        "universal_product_code": upc,
-        "title": titre,
-        "price_including_tax": prix_ttc,
-        "price_excluding_tax": prix_ht,
-        "number_available": quantite_disponible,
-        "product_description": description,
-        "category": categorie,
-        "review_rating": note,
-        "image_url": url_image_livre,
+def fetch_book_informations(book_url:str):
+    page_content = request.get_page_content(book_url).find_all("div", class_="page_inner")[1]
+    category = page_content.find("ul", "breadcrumb").find_all("a")[2].get_text()
+    title = page_content.find("ul", "breadcrumb").find_all("li")[-1].get_text()
+    product_page = page_content.find("article", class_="product_page")
+    image_url = constants.URL + product_page.find("div", class_="item active").find("img")["src"][6:]
+    product_description = product_page.find_all("p")[3].get_text()
+    if product_description == "\n\n\n\n\n\n":
+        product_description = "Pas de description"
+    specific_information = product_page.find("table", "table table-striped").find_all("td")
+    universal_product_code = specific_information[0].get_text()
+    price_including_tax = utils.convert_currency_gbp_to_eur(float(specific_information[3].get_text().strip("£")))
+    price_excluding_tax = utils.convert_currency_gbp_to_eur(float(specific_information[2].get_text().strip("£")))
+    number_available = int("".join([character for character in specific_information[5].get_text() if character.isdigit()]))
+    review_rating = constants.stars[product_page.find("p", class_="star-rating")["class"][1]]
+    all_book_informations = {
+        "product_page_url": book_url,
+        "universal_product_code": universal_product_code,
+        "title": title,
+        "price_including_tax": price_including_tax,
+        "price_excluding_tax": price_excluding_tax,
+        "number_available": number_available,
+        "product_description": product_description,
+        "category": category,
+        "review_rating": review_rating,
+        "image_url": image_url,
     }
-    if constants.extraction_images == True:
-        toutes_les_informations_du_livre["image_directory"] = extraction_images(url_image_livre, categorie, titre.replace(":","-"))
-        
+    if constants.extract_images == True:
+        all_book_informations["image_directory"] = extract_images(image_url, category, title)      
+    return all_book_informations
 
-    return toutes_les_informations_du_livre
-
-def extraire_informations_des_livres_pour_une_categorie(url_categorie):
-    nombre_total_livre_site = recuperer_nombre_total_livre()
-    tous_les_liens_livres = []
-    toutes_les_informations_livres_de_categorie = []
-    numero_page = 1
-    numero_livre_en_cours = 0
-    numero_livre_page = 0
-    contenu_page_categorie = requete.recuperer_contenu_page(url_categorie)
-    nom_categorie = contenu_page_categorie.title.get_text().replace("\n","")[4:-33]
-    nombre_total_livre_categorie = int(contenu_page_categorie.find("form", class_="form-horizontal").find("strong").get_text())
+def extract_informations_from_books_for_a_category(category_url:str):
+    total_books_site = fetch_total_book_count()
+    all_books_links = []
+    all_books_informations_for_category = []
+    page_number = 1
+    current_book_number = 0
+    current_book_number_of_page = 0
+    category_page_content = request.get_page_content(category_url)
+    category_name = category_page_content.title.get_text().replace("\n","")[4:-33]
+    total_number_of_books_in_category = int(category_page_content.find("form", class_="form-horizontal").find("strong").get_text())
     try:
-        nombre_page = int(contenu_page_categorie.find("li", class_="current").get_text().replace(" ","").replace("\n","")[-1:])
+        number_of_pages = int(category_page_content.find("li", class_="current").get_text().replace(" ","").replace("\n","")[-1:])
     except AttributeError:
-        nombre_page = 1
-    while numero_livre_en_cours < nombre_total_livre_categorie:
-        if nombre_page == 1:
-            url_pages_categorie = contenu_page_categorie
-            nombre_livre_page_courante = url_pages_categorie.find("form", class_="form-horizontal").find_all("strong")
+        number_of_pages = 1
+    while current_book_number < total_number_of_books_in_category:
+        if number_of_pages == 1:
+            category_pages_url = category_page_content
+            number_of_books_in_current_page = category_pages_url.find("form", class_="form-horizontal").find_all("strong")
         else:
-            url_pages_categorie = requete.recuperer_contenu_page(url_categorie.replace("index.html",f"page-{numero_page}.html"))
-            nombre_livre_page_courante = url_pages_categorie.find("form", class_="form-horizontal").find_all("strong")[2:]
-        livres_page = url_pages_categorie.find_all("li", class_="col-xs-6 col-sm-4 col-md-3 col-lg-3")
-        liens_livres = []
-        for livre in livres_page:
-            liens_livres.append(livre.find("a")["href"].replace("../../../", constants.URL + "catalogue/"))
-            numero_livre_en_cours += 1
-            tous_les_liens_livres.append(liens_livres)
-        for lien in liens_livres:
-            if numero_livre_page < 20:
-                numero_livre_page += 1
+            category_pages_url = request.get_page_content(category_url.replace("index.html",f"page-{page_number}.html"))
+            number_of_books_in_current_page = category_pages_url.find("form", class_="form-horizontal").find_all("strong")[2:]
+        books_in_page = category_pages_url.find_all("li", class_="col-xs-6 col-sm-4 col-md-3 col-lg-3")
+        books_links = []
+        for book in books_in_page:
+            books_links.append(book.find("a")["href"].replace("../../../", constants.URL + "catalogue/"))
+            current_book_number += 1
+            all_books_links.append(books_links)
+        for link in books_links:
+            if current_book_number_of_page < 20:
+                current_book_number_of_page += 1
             else:
-                numero_livre_page = 1
-            print(f"""Extraction des données du livre {"0" + str(numero_livre_page) if numero_livre_page < 10 else numero_livre_page}/{int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1) if int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1) > 9 else "0" + str(int(nombre_livre_page_courante[0].get_text()) - 20 * (numero_page -1))} - Catégorie "{nom_categorie}" - Page {numero_page} sur {nombre_page}... {round(numero_livre_en_cours / nombre_total_livre_site * 100, None)}%""")
-            toutes_les_informations_livres_de_categorie.append(recuperer_information_livre(lien))
-        numero_page += 1
-    utilitaires.enregistrement_des_donnees_csv(toutes_les_informations_livres_de_categorie)
+                current_book_number_of_page = 1
+            print(f"""Extraction des données du livre {"0" + str(current_book_number_of_page) if current_book_number_of_page < 10 else current_book_number_of_page}/{int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) if int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) > 9 else "0" + str(int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1))} - Catégorie "{category_name}" - Page {page_number} sur {number_of_pages}... {round(current_book_number / total_books_site * 100, None)}%""")
+            all_books_informations_for_category.append(fetch_book_informations(link))
+        page_number += 1
+    utils.save_data_to_csv(all_books_informations_for_category)
 
-def extraction_toutes_les_categories():
-    contenu_page = requete.recuperer_contenu_page(constants.URL)
-    toutes_les_categories = contenu_page.find("ul", class_="nav nav-list").find_all("a")[1:]
-    for categorie in toutes_les_categories:
-        extraire_informations_des_livres_pour_une_categorie(str(constants.URL + categorie["href"]))
+def extract_all_categories():
+    page_content = request.get_page_content(constants.URL)
+    all_categories = page_content.find("ul", class_="nav nav-list").find_all("a")[1:]
+    for category in all_categories:
+        extract_informations_from_books_for_a_category(str(constants.URL + category["href"]))
 
-def extraction_images(url_image, categorie_livre, nom_livre):
-    contenu = requete.recuperer_image_page(url_image)
-    return utilitaires.enregistrement_image(categorie_livre, nom_livre, contenu)
+def extract_images(image_url:str, book_category:str, book_name:str):
+    content = request.get_page_image(image_url)
+    return utils.save_image(book_category, book_name, content)
     
-def recuperer_categories_disponibles():
-    categories = {}
-    liste_categorie = []
-    contenu_page = requete.recuperer_contenu_page(constants.URL)
-    toutes_les_categories = contenu_page.find("ul", class_="nav nav-list").find_all("a")[1:]
-    for categorie in toutes_les_categories:
-        categories[categorie.string.lower().replace("\n", "")[60:-52]] = (constants.URL + categorie["href"])
-    constants.categories_disponibles = categories
-    for cle in categories:
-        liste_categorie.append(cle)
-    return liste_categorie
+def fetch_available_categories():
+    categories_names_and_links = {}
+    categories_list = []
+    page_content = request.get_page_content(constants.URL)
+    all_categories = page_content.find("ul", class_="nav nav-list").find_all("a")[1:]
+    for category in all_categories:
+        categories_names_and_links[category.string.lower().replace("\n", "")[60:-52]] = (constants.URL + category["href"])
+    constants.available_categories = categories_names_and_links
+    for key in categories_names_and_links:
+        categories_list.append(key)
+    return categories_list
 
-def recuperer_nombre_total_livre():
-    contenu_page = requete.recuperer_contenu_page(constants.URL)
-    constants.nombre_livre_total = int(contenu_page.find("form", class_="form-horizontal").find("strong").get_text())
-    return constants.nombre_livre_total
+def fetch_total_book_count():
+    page_content = request.get_page_content(constants.URL)
+    constants.number_of_books_total = int(page_content.find("form", class_="form-horizontal").find("strong").get_text())
+    return constants.number_of_books_total
 
 
 
