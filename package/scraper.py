@@ -3,6 +3,15 @@ from package import utils
 import constants
 
 def fetch_book_informations(book_url:str):
+    """Récupère l'intégralité des informations d'un livre sous forme de dictionnaire.
+    Si l'option de télécharger les images a été validé, il parsera également l'image du livre.
+
+    Args:
+        book_url (str): Entrer l'adresse url de la page html du livre.
+
+    Returns:
+        all_book_informations (dict): Retourne toutes les informations du livre sous forme de dictionnaire.
+    """
     page_content = request.get_page_content(book_url).find_all("div", class_="page_inner")[1]
     category = page_content.find("ul", "breadcrumb").find_all("a")[2].get_text()
     title = page_content.find("ul", "breadcrumb").find_all("li")[-1].get_text()
@@ -34,6 +43,11 @@ def fetch_book_informations(book_url:str):
     return all_book_informations
 
 def extract_informations_from_books_for_a_category(category_url:str):
+    """Récupère l'intégralité des informations de tous les livres d'une catégorie et enregistre en csv grâce à la fonction save_data_to_csv()
+
+    Args:
+        category_url (str): Entrer l'adresse url de la page html de la catégorie.
+        """
     total_books_site = fetch_total_book_count()
     all_books_links = []
     all_books_informations_for_category = []
@@ -71,16 +85,30 @@ def extract_informations_from_books_for_a_category(category_url:str):
     utils.save_data_to_csv(all_books_informations_for_category)
 
 def extract_all_categories():
+    """Extrait toutes les catégories disponible sur le site.
+    """
     page_content = request.get_page_content(constants.URL)
     all_categories = page_content.find("ul", class_="nav nav-list").find_all("a")[1:]
     for category in all_categories:
         extract_informations_from_books_for_a_category(str(constants.URL + category["href"]))
 
 def extract_images(image_url:str, book_category:str, book_name:str):
+    """Extrait l'image de l'adresse url. 
+
+    Args:
+        image_url (str): Entrer l'url de l'image.
+        book_category (str): Entrer la catégorie du livre associé à l'image.
+        book_name (str): Entrer le nom du livre associé à l'image.
+    """
     content = request.get_page_image(image_url)
     return utils.save_image(book_category, book_name, content)
     
 def fetch_available_categories():
+    """Recherche et affiche toutes les catégories disponible sur le site.
+
+    Returns:
+        categories_list (list): Retourne une liste comprenant toutes les catégories du site.
+    """
     categories_names_and_links = {}
     categories_list = []
     page_content = request.get_page_content(constants.URL)
@@ -93,6 +121,11 @@ def fetch_available_categories():
     return categories_list
 
 def fetch_total_book_count():
+    """Recherche le nombre total de livres disponible sur le site.
+
+    Returns:
+        constants.number_of_books_total (int): Retourne le nombre total de livres sur le site.
+    """
     page_content = request.get_page_content(constants.URL)
     constants.number_of_books_total = int(page_content.find("form", class_="form-horizontal").find("strong").get_text())
     return constants.number_of_books_total

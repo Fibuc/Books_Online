@@ -2,6 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 
 def get_page_content(page_url:str):
+    """Récupère le contenu de la page html entrée en argument et permet de la parser. 
+
+    Args:
+        page_url (str): Entrer l'adresse url de la page html.
+
+    Returns:
+        soup (BeautifulSoup): Retourne un objet de type BeautifulSoup contenant les éléments à parser.
+    """
     counter = 0
     while counter < 20:
         response = requests.get(page_url)
@@ -17,6 +25,14 @@ def get_page_content(page_url:str):
         return False
     
 def get_page_image(image_url:str):
+    """Récupère le contenu de la page html entrée en argument et permet de récupérer l'image.
+
+    Args:
+        image_url (str): Entrer l'adresse url de l'image.
+
+    Returns:
+        soup (BeautifulSoup): Retourne un objet de type BeautifulSoup contenant l'image à télécharger.
+    """
     counter = 0
     while counter < 20:
         response = requests.get(image_url)

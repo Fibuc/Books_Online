@@ -5,12 +5,25 @@ from pathlib import Path
 from datetime import datetime
 
 def convert_currency_gbp_to_eur(amont:float):
+    """Convertisseur de devise entre GBP et EUR
+
+    Args:
+        amont (float): Entrer le montant de devise.
+
+    Returns:
+        round(amount_in_euros, 2): Retourne le montant converti en arrondissant au centième.
+    """
     content = get_page_content("https://www.boursorama.com/bourse/devises/taux-de-change-euro-livresterling-EUR-GBP/")
     exchange_rate = content.find("div", class_="c-faceplate__price--inline").find("span", class_="c-instrument--last").get_text()
     amount_in_euros = amont / float(exchange_rate)
     return round(amount_in_euros, 2)
 
 def save_data_to_csv(data:list):
+    """Enregistre les données d'une catégorie en fichier CSV.
+
+    Args:
+        data (list): Entrer les données en liste.
+    """
     file_name = (f"categorie_{(data[0]['category']).lower()} {str(datetime.now())[:-7]}.csv").replace(" ","_").replace(":","-")
     file_directory = directory_for_saving_csv_file() / file_name
     with open(file_directory,"w", encoding="UTF-8", newline="") as csv_file:
@@ -19,10 +32,25 @@ def save_data_to_csv(data:list):
         writer.writerows(data)
 
 def directory_for_saving_csv_file():
+    """Sélectionne le chemin pour l'enregistrement des fichiers CSV.
+
+    Returns:
+        path(Path): Retourne un chemin de type Path.
+    """
     path = Path(constants.saved_files_directory)
     return path
 
 def save_image(category:str, file_name:str, content):
+    """Enregistre l'image dans le dossier sélectionné.
+
+    Args:
+        category (str): Entrer le nom de la catégorie.
+        file_name (str): Entrer le nom du fichier.
+        content (_type_): Contenu du lien url de l'image.
+
+    Returns:
+        complete_directory (path): Retourne le chemin complet de l'image dans le dossier local.
+    """
     path = Path(constants.saved_files_directory)
     image_folder = path / "Images" / category
     filtered_file_name = remove_special_characters(file_name)
@@ -33,6 +61,8 @@ def save_image(category:str, file_name:str, content):
     return complete_directory
 
 def check_directory():
+    """Vérifie si le dossier est valide ou non et demande si l'on veut la création s'il n'est pas présent.
+    """
     path = Path(constants.saved_files_directory)
     if path.exists() == False:
         while str(path.parent) == ".":
@@ -61,6 +91,8 @@ def check_directory():
     constants.valid_directory = True
 
 def image_download_choice():
+    """Demande si l'on veut enregistrer les images lors de l'extraction des informations des livres.
+    """
     image_download_choice = ""
     while image_download_choice != "y" or "n":
         image_download_choice = input("Voulez-vous télécharger les images ? (y/n) : ")
@@ -75,6 +107,8 @@ def image_download_choice():
                 print("Veuillez choisir une option valide.")
 
 def remove_special_characters(text:str):
+    """Filtre les caractères invalides pour la création de fichiers dans le système d'exploitation.
+    """
     transTable = text.maketrans("""<>:“"'/|?*""", "  -  .    ")
     filtred_text = text.translate(transTable)
     return filtred_text
