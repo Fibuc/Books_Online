@@ -12,3 +12,5 @@ Vous aurez également besoin d'installer les packages essentiels pour le lanceme
 ```bash
     pip install -r requirements.txt
 ```
+
+Veillez également à bien vous situer sur la branche "main" lors de l'execution de script.py.
