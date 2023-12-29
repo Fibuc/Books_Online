@@ -48,7 +48,6 @@ def extract_informations_from_books_for_a_category(category_url:str):
     Args:
         category_url (str): Entrer l'adresse url de la page html de la catégorie.
         """
-    total_books_site = fetch_total_book_count()
     all_books_links = []
     all_books_informations_for_category = []
     page_number = 1
@@ -79,7 +78,7 @@ def extract_informations_from_books_for_a_category(category_url:str):
                 current_book_number_of_page += 1
             else:
                 current_book_number_of_page = 1
-            print(f"""Extraction des données du livre {"0" + str(current_book_number_of_page) if current_book_number_of_page < 10 else current_book_number_of_page}/{int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) if int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) > 9 else "0" + str(int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1))} - Catégorie "{category_name}" - Page {page_number} sur {number_of_pages}... {round(current_book_number / total_books_site * 100, None)}%""")
+            print(f"""Extraction des données du livre {"0" + str(current_book_number_of_page) if current_book_number_of_page < 10 else current_book_number_of_page}/{int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) if int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) > 9 else "0" + str(int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1))} - Catégorie "{category_name}" - Page {page_number} sur {number_of_pages}""")
             all_books_informations_for_category.append(fetch_book_informations(link))
         page_number += 1
     utils.save_data_to_csv(all_books_informations_for_category)
@@ -119,16 +118,3 @@ def fetch_available_categories():
     for key in categories_names_and_links:
         categories_list.append(key)
     return categories_list
-
-def fetch_total_book_count():
-    """Recherche le nombre total de livres disponible sur le site.
-
-    Returns:
-        constants.number_of_books_total (int): Retourne le nombre total de livres sur le site.
-    """
-    page_content = request.get_page_content(constants.URL)
-    constants.number_of_books_total = int(page_content.find("form", class_="form-horizontal").find("strong").get_text())
-    return constants.number_of_books_total
-
-
-
