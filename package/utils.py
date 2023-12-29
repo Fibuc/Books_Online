@@ -1,8 +1,9 @@
-from package.request import get_page_content
 import csv
-import constants
 from pathlib import Path
 from datetime import datetime
+
+from package.request import get_page_content
+import constants
 
 def convert_currency_gbp_to_eur(amont:float):
     """Convertisseur de devise entre GBP et EUR
@@ -24,7 +25,7 @@ def save_data_to_csv(data:list):
     Args:
         data (list): Entrer les données en liste.
     """
-    file_name = (f"categorie_{(data[0]['category']).lower()} {str(datetime.now())[:-7]}.csv").replace(" ","_").replace(":","-")
+    file_name = (f"{(data[0]['category']).lower()} {str(datetime.now())[:-7]}.csv").replace(" ","_").replace(":","-")
     file_directory = directory_for_saving_csv_file() / file_name
     with open(file_directory,"w", encoding="UTF-8", newline="") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=data[0].keys())
@@ -41,7 +42,7 @@ def directory_for_saving_csv_file():
     return path
 
 def save_image(category:str, file_name:str, content):
-    """Enregistre l'image dans le dossier sélectionné.
+    """Enregistre l'image dans le dossier sélectionné avec une limite de longueur du répertoire de 256 caractères.
 
     Args:
         category (str): Entrer le nom de la catégorie.
@@ -55,6 +56,10 @@ def save_image(category:str, file_name:str, content):
     image_folder = path / "Images" / category
     filtered_file_name = remove_special_characters(file_name)
     complete_directory = image_folder / f"{filtered_file_name}.jpg"
+    lenght_directory = len(str(complete_directory))
+    lenght_max_directory = 256
+    if lenght_directory > lenght_max_directory:
+        complete_directory = Path(str(complete_directory)[:-(lenght_directory - lenght_max_directory) - len(complete_directory.suffix)] + ".jpg")
     image_folder.mkdir(parents=True, exist_ok=True)
     with open(complete_directory, "wb") as image_file:
         image_file.write(content)
@@ -109,7 +114,6 @@ def image_download_choice():
 def remove_special_characters(text:str):
     """Filtre les caractères invalides pour la création de fichiers dans le système d'exploitation.
     """
-    transTable = text.maketrans("""<>:“"'/|?*""", "  -  .    ")
-    filtred_text = text.translate(transTable)
+    transtable = text.maketrans("""<>:“"'/|?*""", "  -  .    ")
+    filtred_text = text.translate(transtable)
     return filtred_text
-

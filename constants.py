@@ -1,5 +1,6 @@
-MENU_HEADER = """==================================================
-       BIENVENUE SUR LE SCRAPER BOOK ONLINE
+MENU_HEADER = """
+==================================================
+     BIENVENUE SUR LE SCRAPER BOOKS TO SCRAPE
 =================================================="""
 MENU_OPTION ="""Choississez une option :
 --------------------------------------------------
