@@ -1,14 +1,13 @@
 import constants
-from package import utils
-from package import scraper
+from package import utils, scraper
 
 print(constants.MENU_HEADER)
 
-while constants.valid_directory == False:
+while not constants.valid_directory:
     constants.saved_files_directory = input("Veuillez insérer le répertoire d'enregistrement : ")
     utils.check_directory()
 
-while constants.start == True:
+while constants.start:
     print(constants.MENU_OPTION)
     user_choice = input("Quel est votre choix ? : ")
     match user_choice:

@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-def get_page_content(page_url:str):
+def get_page_content(page_url: str):
     """Récupère le contenu de la page html entrée en argument et permet de la parser. 
 
     Args:
@@ -24,7 +24,7 @@ def get_page_content(page_url:str):
         print("Erreur de connexion avec l'url")
         return False
     
-def get_page_image(image_url:str):
+def get_page_image(image_url: str):
     """Récupère le contenu de la page html entrée en argument et permet de récupérer l'image.
 
     Args:
