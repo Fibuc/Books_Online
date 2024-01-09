@@ -5,7 +5,7 @@ from datetime import datetime
 from package.request import get_page_content
 import constants
 
-def convert_currency_gbp_to_eur(amont:float):
+def convert_currency_gbp_to_eur(amont: float):
     """Convertisseur de devise entre GBP et EUR
 
     Args:
@@ -54,7 +54,7 @@ def save_image(category:str, file_name:str, content):
     """
     path = Path(constants.saved_files_directory)
     image_folder = path / "Images" / category
-    filtered_file_name = remove_special_characters(file_name)
+    filtered_file_name = filter_filename_characters(file_name)
     complete_directory = image_folder / f"{filtered_file_name}.jpg"
     lenght_directory = len(str(complete_directory))
     lenght_max_directory = 256
@@ -69,7 +69,7 @@ def check_directory():
     """Vérifie si le dossier est valide ou non et demande si l'on veut la création s'il n'est pas présent.
     """
     path = Path(constants.saved_files_directory)
-    if path.exists() == False:
+    if not path.exists():
         while str(path.parent) == ".":
             print("Chemin de répertoire non valide.")
             return False
@@ -111,7 +111,7 @@ def image_download_choice():
             case _ :
                 print("Veuillez choisir une option valide.")
 
-def remove_special_characters(text:str):
+def filter_filename_characters(text: str):
     """Filtre les caractères invalides pour la création de fichiers dans le système d'exploitation.
     """
     transtable = text.maketrans("""<>:“"'/|?*""", "  -  .    ")

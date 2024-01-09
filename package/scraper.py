@@ -1,8 +1,7 @@
-from package import request
-from package import utils
+from package import request, utils
 import constants
 
-def fetch_book_informations(book_url:str):
+def fetch_book_informations(book_url: str):
     """Récupère l'intégralité des informations d'un livre sous forme de dictionnaire.
     Si l'option de télécharger les images a été validé, il parsera également l'image du livre.
 
@@ -38,11 +37,11 @@ def fetch_book_informations(book_url:str):
         "review_rating": review_rating,
         "image_url": image_url,
     }
-    if constants.extract_images == True:
+    if constants.extract_images:
         all_book_informations["image_directory"] = extract_images(image_url, category, title)      
     return all_book_informations
 
-def extract_informations_from_books_for_a_category(category_url:str):
+def extract_informations_from_books_for_a_category(category_url: str):
     """Récupère l'intégralité des informations de tous les livres d'une catégorie et enregistre en csv grâce à la fonction save_data_to_csv()
 
     Args:
@@ -78,7 +77,10 @@ def extract_informations_from_books_for_a_category(category_url:str):
                 current_book_number_of_page += 1
             else:
                 current_book_number_of_page = 1
-            print(f"""Extraction des données du livre {"0" + str(current_book_number_of_page) if current_book_number_of_page < 10 else current_book_number_of_page}/{int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) if int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1) > 9 else "0" + str(int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1))} - Catégorie "{category_name}" - Page {page_number} sur {number_of_pages}""")
+            current_book_number_of_page_str = (str(current_book_number_of_page) if current_book_number_of_page > 9 else f"0{current_book_number_of_page}")
+            number_of_books_in_page = int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1)
+            number_of_books_in_page_str = (str(number_of_books_in_page) if number_of_books_in_page > 9 else f"0{number_of_books_in_page}")
+            print(f"Extraction des données du livre {current_book_number_of_page_str}/{number_of_books_in_page_str} - Catégorie \"{category_name}\" - Page {page_number} sur {number_of_pages}")
             all_books_informations_for_category.append(fetch_book_informations(link))
         page_number += 1
     utils.save_data_to_csv(all_books_informations_for_category)
@@ -91,7 +93,7 @@ def extract_all_categories():
     for category in all_categories:
         extract_informations_from_books_for_a_category(str(constants.URL + category["href"]))
 
-def extract_images(image_url:str, book_category:str, book_name:str):
+def extract_images(image_url: str, book_category: str, book_name: str):
     """Extrait l'image de l'adresse url. 
 
     Args:
