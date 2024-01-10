@@ -11,10 +11,10 @@ while constants.start:
     print(constants.MENU_OPTION)
     user_choice = input("Quel est votre choix ? : ")
     match user_choice:
-        case "1":
+        case "1":   # Choix extraction toutes les catégories
             utils.image_download_choice()
             scraper.extract_all_categories()
-        case "2":
+        case "2":   # Choix extraction une seule catégorie
             category_list = scraper.fetch_available_categories()
             print(category_list)
             selected_category = input("Veuillez choisir la catégorie : ").lower()
@@ -24,13 +24,13 @@ while constants.start:
             utils.image_download_choice()
             scraper.extract_informations_from_books_for_a_category(constants.available_categories[selected_category])
             print("")
-        case "3":
+        case "3":   # Changer le répertoire
             old_directory = constants.saved_files_directory
             constants.saved_files_directory = input("Veuillez indiquer le nouveau répertoire : ")
             if constants.saved_files_directory == "q":
                 constants.saved_files_directory = old_directory
             utils.check_directory()
-        case "4":
+        case "4":   # Fermeture de l'application
             print("Fermeture de l'application")
             constants.start = False
         case _:

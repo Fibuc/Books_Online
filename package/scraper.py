@@ -11,7 +11,7 @@ def fetch_book_informations(book_url: str):
     Returns:
         all_book_informations (dict): Retourne toutes les informations du livre sous forme de dictionnaire.
     """
-    page_content = request.get_page_content(book_url).find_all("div", class_="page_inner")[1]
+    page_content = request.get_page_content(book_url).find_all("div", class_="page_inner")[1] # Récupère le contenu de la page
     category = page_content.find("ul", "breadcrumb").find_all("a")[2].get_text()
     title = page_content.find("ul", "breadcrumb").find_all("li")[-1].get_text()
     product_page = page_content.find("article", class_="product_page")
@@ -38,7 +38,7 @@ def fetch_book_informations(book_url: str):
         "image_url": image_url,
     }
     if constants.extract_images:
-        all_book_informations["image_directory"] = extract_images(image_url, category, title)      
+        all_book_informations["image_directory"] = extract_images(image_url, category, title) # Ajoute au dictionnaire le lien répertoire    
     return all_book_informations
 
 def extract_informations_from_books_for_a_category(category_url: str):
@@ -52,9 +52,9 @@ def extract_informations_from_books_for_a_category(category_url: str):
     page_number = 1
     current_book_number = 0
     current_book_number_of_page = 0
-    category_page_content = request.get_page_content(category_url)
+    category_page_content = request.get_page_content(category_url) # Récupère le contenu de la page
     category_name = category_page_content.title.get_text().replace("\n","")[4:-33]
-    total_number_of_books_in_category = int(category_page_content.find("form", class_="form-horizontal").find("strong").get_text())
+    total_number_of_books_in_category = int(category_page_content.find("form", class_="form-horizontal").find("strong").get_text()) # Récupère nombre total livre de la catégorie
     try:
         number_of_pages = int(category_page_content.find("li", class_="current").get_text().replace(" ","").replace("\n","")[-1:])
     except AttributeError:
@@ -68,11 +68,11 @@ def extract_informations_from_books_for_a_category(category_url: str):
             number_of_books_in_current_page = category_pages_url.find("form", class_="form-horizontal").find_all("strong")[2:]
         books_in_page = category_pages_url.find_all("li", class_="col-xs-6 col-sm-4 col-md-3 col-lg-3")
         books_links = []
-        for book in books_in_page:
+        for book in books_in_page:  # Boucle pour récupérer les liens des livres de la page
             books_links.append(book.find("a")["href"].replace("../../../", constants.URL + "catalogue/"))
             current_book_number += 1
             all_books_links.append(books_links)
-        for link in books_links:
+        for link in books_links:    # Boucle pour exécuter l'extraction des pages produits
             if current_book_number_of_page < 20:
                 current_book_number_of_page += 1
             else:
@@ -81,9 +81,9 @@ def extract_informations_from_books_for_a_category(category_url: str):
             number_of_books_in_page = int(number_of_books_in_current_page[0].get_text()) - 20 * (page_number -1)
             number_of_books_in_page_str = (str(number_of_books_in_page) if number_of_books_in_page > 9 else f"0{number_of_books_in_page}")
             print(f"Extraction des données du livre {current_book_number_of_page_str}/{number_of_books_in_page_str} - Catégorie \"{category_name}\" - Page {page_number} sur {number_of_pages}")
-            all_books_informations_for_category.append(fetch_book_informations(link))
+            all_books_informations_for_category.append(fetch_book_informations(link)) # Récupère info livres dans une liste de dictionnaires
         page_number += 1
-    utils.save_data_to_csv(all_books_informations_for_category)
+    utils.save_data_to_csv(all_books_informations_for_category) # Enregistre au format CSV
 
 def extract_all_categories():
     """Extrait toutes les catégories disponible sur le site.
